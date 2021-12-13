@@ -6,6 +6,8 @@ import pdfplumber
 # from tools import
 import re
 import time
+import xml.dom.minidom as minidom
+import fitz
 
 # 页面偏移量,真正的第一页在PDF中是第几页
 pageOffset = 9
@@ -32,6 +34,7 @@ def dealTitle(title, jishu):
 
 # 处理文本文档到书签类,最多处理7级书签
 def fromTextToBookMark():
+    """处理文本文档到书签字典,最多处理7级书签"""
     # 读取文本文件,放入数组
     with open(bookMarkTxtName, 'r', encoding='UTF-8') as f:
         yy_book_mark_zong = {'childBookMark': [], 'title': '', 'startPageNumber': 0, 'endPageNumber': 0, 'pointX': 0,
@@ -247,14 +250,13 @@ def createWenDangBookMarkXml(dom, book_mark, wen_dang_element, page_offset, page
 
 
 if __name__ == '__main__':
-    # 把书签未整理,整理成有一定格式的书签到书签.txt
+    # # 把书签未整理,整理成有一定格式的书签到书签.txt
     formatBookMark()
-    # 处理文本文档到书签字典,最多处理7级书签
+    # # 处理文本文档到书签字典,最多处理7级书签
     book_mark_class = fromTextToBookMark()['childBookMark']
-    # 在pdf中找到书签位置,完善字典,yy_book_mark是一个列表组数
+    # # 在pdf中找到书签位置,完善字典,yy_book_mark是一个列表组数
     yy_book_mark = findBookMarkInPDF(book_mark_class)
-    # 将书签字典数组导出为xml文件,然后用PDFPatcher软件处理
+    # # 将书签字典数组导出为xml文件,然后用PDFPatcher软件处理
     createBookMarkXml(yy_book_mark, pageOffset, bookMarkXmlName)
     # 在PDF中添加书签
-
-    print('结束')
+    print('完成')
