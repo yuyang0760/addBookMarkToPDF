@@ -138,7 +138,7 @@ def printBookMark(book_mark):
 def findBookMarkInPDF(book_mark):
     """在pdf中找到书签位置"""
     # 读取pdf并选择对应的页数
-    with pdfplumber.open("类型题改带书签.pdf") as pdf:
+    with pdfplumber.open(pdfName) as pdf:
 
         for p in book_mark:
             # 打印书签
@@ -173,11 +173,11 @@ def formatBookMark():
     with open(bookMarkNotDoTxtName, 'r', encoding='UTF-8') as f:
         for line in f.readlines():
             line_arr = line.strip().split('\t')  # 把末尾的'\n'删掉 再用\t分割
-            pattern = re.compile(r'^[0-9]{1,2}(\.[0-9]{1,2})?|^第[一二三四五六七八九十]{1,2}章')
-            top_number = pattern.search(line_arr[0]).string
-            top_title = line_arr[1][len(top_number):]
+            pattern = re.compile(r'^[0-9]{1,2}(\.[0-9]{1,2}){0,}|^第[一二三四五六七八九十0-9]{1,3}章')
+            top_number = pattern.search(line_arr[0]).group()
+            top_title = line_arr[0][len(top_number):]
             book_mark_lines.append(
-                '%s %s%s\t%s%s' % ('\t' * (top_number.count(r'.')), top_number, top_title, line_arr[1], '\n'))
+                "".join(['\t' * (top_number.count(r'.')), top_number, ' ', top_title, '\t', line_arr[1], '\n']))
     with open(bookMarkTxtName, 'w', encoding='UTF-8') as f:
         f.writelines(book_mark_lines)
 
@@ -207,18 +207,14 @@ def createBookMarkXml(book_mark, page_offset, book_mark_xml_name):
     # 页码样式
     ye_ma_element = dom.createElement('页码样式')
     root.appendChild(ye_ma_element)
-    # for i in range(5):
-    #     element = dom.createElement('Name')
-    #     element.appendChild(dom.createTextNode('default'))
-    #     element.setAttribute('age', str(i))
-    #     root.appendChild(element)
+
     # 保存文件
     with open(book_mark_xml_name, 'w', encoding='utf-8') as f:
         dom.writexml(f, addindent='\t', newl='\n', encoding='utf-8')
 
 
 # 递归创建文档子书签
-def createWenDangBookMarkXml(dom, book_mark, wen_dang_element, page_offset, pageHeight):
+def createWenDangBookMarkXml(dom, book_mark, wen_dang_element, page_offset, pageHeight=849):
     """递归创建子书签xml文件"""
 
     # for i in range(5):
@@ -239,7 +235,7 @@ def createWenDangBookMarkXml(dom, book_mark, wen_dang_element, page_offset, page
         element.setAttribute('页码', str(int(p['startPageNumber']) + page_offset - 1))
         element.setAttribute('显示方式', '坐标缩放')
         element.setAttribute('左', str(p['pointX'] + 40))
-        element.setAttribute('上', str(849 - p['pointY']))
+        element.setAttribute('上', str(pageHeight - p['pointY']))
         element.setAttribute('比例', "0")
         wen_dang_element.appendChild(element)
 
@@ -259,4 +255,4 @@ if __name__ == '__main__':
     # # 将书签字典数组导出为xml文件,然后用PDFPatcher软件处理
     createBookMarkXml(yy_book_mark, pageOffset, bookMarkXmlName)
     # 在PDF中添加书签
-    print('完成')
+    print("完成,请用PDFPatcher软件处理 "+bookMarkXmlName)
